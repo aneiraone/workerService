@@ -5,9 +5,10 @@ namespace WorkerService.Service
 {
     public class WSEstadoDocumento
     {
-        private static readonly HttpClient httpClient = new HttpClient();
+        //private static readonly HttpClient httpClient = new HttpClient();
         public static async Task<string> Invoke(string body)
         {
+            HttpClient httpClient = new HttpClient();
             string _response = string.Empty;
             using (HttpContent content = new StringContent(body, Encoding.UTF8, "application/json"))
             using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, AppSettings.GetInstance().EndPoint.UrlEstadoDocumento))

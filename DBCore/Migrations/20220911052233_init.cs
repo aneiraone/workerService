@@ -31,11 +31,12 @@ namespace DBCore.Migrations
                     valor_neto = table.Column<int>(type: "int", nullable: false),
                     valor_iva = table.Column<int>(type: "int", nullable: false),
                     total = table.Column<int>(type: "int", nullable: false),
-                    estado1 = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: false)
+                    estado1 = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    estado2 = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: false)
+                    estado2 = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    FechaCreacion = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Enviado = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -26,7 +26,7 @@ namespace DbCore
                 //var serverVersion = new MySqlServerVersion(new Version(8, 0, 29));
 
                 IConfigurationRoot configuration = new ConfigurationBuilder()
-                   // .SetBasePath(Directory.GetCurrentDirectory
+                  // .SetBasePath(Directory.GetCurrentDirectory())
                   .SetBasePath(AppContext.BaseDirectory)
                   .AddJsonFile("appsettings.json")
                   .Build();

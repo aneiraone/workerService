@@ -25,16 +25,20 @@ namespace DBCore.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<bool>("Enviado")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("Enviado");
+
                     b.Property<string>("Estado1")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("varchar(15)")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
                         .HasColumnName("estado1");
 
                     b.Property<string>("Estado2")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("varchar(15)")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
                         .HasColumnName("estado2");
 
                     b.Property<DateTime>("FechaCreacion")

@@ -3,12 +3,10 @@ using Common.BL;
 using Common.SOAP.Response;
 using DbCore.Service;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
 using WorkerService.Service;
-using WorkerService.Signature;
 
 namespace WorkerService
 {
@@ -29,6 +27,9 @@ namespace WorkerService
             {
                 try
                 {
+                    //   Logger.GetInstance().Dispose();
+                    //   _log = null;
+                    //   _log = Logger.GetInstance()._Logger;
                     _log.Information(string.Format("Iniciando Proceso {0}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")));
                     _logger.LogInformation(string.Format("Iniciando Proceso {0}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")));
                     string pathJson = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
@@ -70,20 +71,17 @@ namespace WorkerService
                     #region "SII"
                     try
                     {
-                        // string seed = await WSFacturacionElectronica.GetSeed();
-                        // string body = new Firmado().Create(seed);
-                        // string _token = await WSFacturacionElectronica.GetToken(body);
-                        Token auth = await WSFacturacionElectronica.GetToken(appSettings.TokenExpired);
-                        ////  DocumentoService contextDB = new DocumentoService();
+                        WSFacturacionElectronica wsFactura = new WSFacturacionElectronica();
+                        Token auth = await wsFactura.GetToken(appSettings.TokenExpired);
                         List<Documentos> documents = contextDB.GetDocuments();
                         foreach (var document in documents)
                         {
                             // RENUEVA TOKEN SI EXPIRO
                             if (!auth.ValidateToken(auth))
-                            { auth = await WSFacturacionElectronica.GetToken(appSettings.TokenExpired); }
+                            { auth = await wsFactura.GetToken(appSettings.TokenExpired); }
 
                             int rut = int.Parse(document.RutReceptor.Split('-')[0]);
-                            string estado = await WSFacturacionElectronica.GetEstado(auth.token, document.RutEmisor, document.NumeroDocumento,
+                            string estado = await wsFactura.GetEstado(auth.token, document.RutEmisor, document.NumeroDocumento,
                                 document.TipoDocumento, rut, document.RutReceptor.Split('-')[1], document.Total, document.FechaEmision);
 
                             string codigo = string.Empty;
@@ -114,6 +112,7 @@ namespace WorkerService
                                 descripcion = ex.Message;
                             }
                         }
+                        wsFactura = null;
                     }
                     catch (Exception ex)
                     {
@@ -129,6 +128,11 @@ namespace WorkerService
                         {
                             continue;
                         }
+                        if (document.Estado1 == document.Estado2)
+                        { //ya no puedo controlar eso 
+                            continue;
+                        }
+
                         try
                         {
                             JObject response = JObject.Parse(await WSEstadoDocumento.Invoke(JsonConvert.SerializeObject(document)));
@@ -141,6 +145,10 @@ namespace WorkerService
                             if (ok.ToLower() == "error")
                             {
                                 _log.Error(string.Format("error respuesta GetDocumentsWithStatus document {0} {1}", document.Id, JsonConvert.SerializeObject(response)));
+                            }
+                            else
+                            {
+                                contextDB.Update(document.Id);
                             }
 
                         }
@@ -160,6 +168,10 @@ namespace WorkerService
                 {
                     _log.Error(string.Format("error {0}-stack{1}", ex.Message, ex.StackTrace));
                     _logger.LogError(ex.Message);
+                }
+                finally
+                {
+                    GC.Collect();
                 }
 
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);

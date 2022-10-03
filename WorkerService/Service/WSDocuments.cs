@@ -10,13 +10,26 @@ namespace WorkerService.Service
 {
     public class WSDocuments
     {
-        private static readonly HttpClient httpClient = new HttpClient();
+
         private static string Node = "FIND_PDOCUMENTOSResult";
         public static async Task<ResponseDocuments> FindDocumentos()
         {
+            HttpClient httpClient = new HttpClient();
             Utils utils = new Utils();
-            int fInicio = Convert.ToInt32(DateTime.Now.AddDays(-1).ToString("yyyyMMdd"));
-            string rq = new RequestDocuments().Get(1, fInicio, fInicio);
+            int fInicio = 0;
+            int fFinal = 0;
+            if (AppSettings.GetInstance().FechaPersonalizada.ActivaFecha)
+            {
+                fInicio = Convert.ToInt32(AppSettings.GetInstance().FechaPersonalizada.FechaDesde);
+                fFinal = Convert.ToInt32(AppSettings.GetInstance().FechaPersonalizada.FechaHasta);
+            }
+            else
+            {
+                fInicio = Convert.ToInt32(DateTime.Now.AddDays(-1).ToString("yyyyMMdd"));
+                fFinal = fInicio;
+            }
+
+            string rq = new RequestDocuments().Get(1, fInicio, fFinal);
 
             ResponseDocuments responseDocuments = new ResponseDocuments();
             using (HttpContent content = new StringContent(rq, Encoding.UTF8, "text/xml"))
@@ -31,7 +44,7 @@ namespace WorkerService.Service
                     {
                         string responseString = await response.Content.ReadAsStringAsync();
                         throw new Exception(string.Format("Received invalid HTTP response status {0}- response {1} function {2}",
-                            response.StatusCode, 
+                            response.StatusCode,
                             responseString,
                             System.Reflection.MethodBase.GetCurrentMethod().Name
                             ));
@@ -47,7 +60,8 @@ namespace WorkerService.Service
                         {
                             element.Value = AppSettings.GetInstance().RutDefault;
                         }
-                        else if (element.Name.LocalName == "rut_cliente" && element.Value != "0") {
+                        else if (element.Name.LocalName == "rut_cliente" && element.Value != "0")
+                        {
                             element.Value = utils.getRut(element.Value);
                         }
                         else if (element.Name.LocalName == "tipo_documento_cobro")
@@ -57,6 +71,7 @@ namespace WorkerService.Service
 
                     }
                     XDocument pDocumentosResult = new XDocument((from xml2 in doc.Descendants(Node) select xml2).ToList());
+                    if (pDocumentosResult.Root == null) { responseDocuments.PDocumentos = new List<PDocumentos>(); return responseDocuments; }
                     responseDocuments = (ResponseDocuments)serializer.Deserialize(new StringReader(pDocumentosResult.ToString()));
                 }
             }

@@ -9,9 +9,10 @@ namespace WorkerService.Service
 {
     public class WSFacturacionElectronica
     {
-        private static readonly HttpClient httpClient = new HttpClient();
-        private static async Task<string> GetSeed()
+        //private static readonly HttpClient httpClient = new HttpClient();
+        private async Task<string> GetSeed()
         {
+            HttpClient httpClient = new HttpClient();
             string seed = string.Empty;
             using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, AppSettings.GetInstance().EndPoint.UrlSemilla))
             {
@@ -39,8 +40,9 @@ namespace WorkerService.Service
             return seed;
         }
 
-       private static async Task<string> GetToken(string body)
+        private async Task<string> GetToken(string body)
         {
+            HttpClient httpClient = new HttpClient();
             string token = string.Empty;
             using (HttpContent content = new StringContent(body, Encoding.UTF8, "application/xml"))
             using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, AppSettings.GetInstance().EndPoint.UrlToken))
@@ -70,11 +72,12 @@ namespace WorkerService.Service
             return string.Format("TOKEN={0}", token);
         }
 
-        public static async Task<string> GetEstado(string token, string rut, int folio, int tipoDocumento, int rutReceptor, string digitoReceptor,
+        public async Task<string> GetEstado(string token, string rut, int folio, int tipoDocumento, int rutReceptor, string digitoReceptor,
             int monto, DateTime fechaEmision)
         {
+           // HttpClient httpClient = new HttpClient();
             UriBuilder url = new UriBuilder(new Uri(AppSettings.GetInstance().EndPoint.UrlEstado).AbsoluteUri + string.Format("{0}-{1}-{2}/estado", rut, tipoDocumento, folio));
-            url.Query = string.Format("rut_receptor={0}&dv_receptor={1}&monto={2}&fechaEmision={3}", rutReceptor, 
+            url.Query = string.Format("rut_receptor={0}&dv_receptor={1}&monto={2}&fechaEmision={3}", rutReceptor,
                 digitoReceptor, monto, fechaEmision.ToString("dd-MM-yyyy"));
 
             var baseAddress = new Uri(url.Uri.AbsoluteUri);
@@ -101,7 +104,8 @@ namespace WorkerService.Service
             }
         }
 
-        public static async Task<Token> GetToken(double expired) {
+        public async Task<Token> GetToken(double expired)
+        {
             string seed = await GetSeed();
             string body = new Firmado().Create(seed);
             string _token = await GetToken(body);

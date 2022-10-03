@@ -47,12 +47,15 @@ namespace Common.BL
         [Column("total")]
         public int Total { get; set; }
 
-        [Column("estado1"), MaxLength(15)]
+        [Column("estado1"), MaxLength(500)]
         public string Estado1 { get; set; }
 
-        [Column("estado2"), MaxLength(15)]
+        [Column("estado2"), MaxLength(500)]
         public string Estado2 { get; set; }
         public DateTime FechaCreacion { get; set; }
+
+        [Column("Enviado")]
+        public bool Enviado { get; set; }
 
         //private List<EstadosSII> _lineas;
         //public List<EstadosSII> Lineas

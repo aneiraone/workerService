@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DBCore.Migrations
 {
     [DbContext(typeof(DocumentDbContext))]
-    [Migration("20220828020421_init")]
+    [Migration("20220911052233_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,16 +27,20 @@ namespace DBCore.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<bool>("Enviado")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("Enviado");
+
                     b.Property<string>("Estado1")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("varchar(15)")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
                         .HasColumnName("estado1");
 
                     b.Property<string>("Estado2")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("varchar(15)")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
                         .HasColumnName("estado2");
 
                     b.Property<DateTime>("FechaCreacion")

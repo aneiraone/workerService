@@ -30,7 +30,8 @@ namespace DbCore.Service
                 ValorNeto = valorNeto,
                 Estado1 = string.Empty,
                 Estado2 = string.Empty,
-                FechaCreacion = DateTime.Now
+                FechaCreacion = DateTime.Now,
+                Enviado = false
 
             };
             _context.Add(documento);
@@ -58,12 +59,24 @@ namespace DbCore.Service
             if (documento.Estado1.Length == 0)
             {
                 documento.Estado1 = mensaje;
+                documento.Enviado = false;
             }
             else
             {
                 documento.Estado2 = documento.Estado1;
                 documento.Estado1 = mensaje;
+                if (!documento.Estado2.Equals(mensaje)) {
+                    documento.Enviado = false;
+                }
             }
+            _context.SaveChanges();
+            return true;
+        }
+
+        public bool Update(int Id)
+        {
+            Documentos documento = _context.Documento.First(x => x.Id == Id);
+            documento.Enviado = true;
             _context.SaveChanges();
             return true;
         }
@@ -79,8 +92,8 @@ namespace DbCore.Service
             DateTime fecha = DateTime.Now.AddDays(AppSettings.GetInstance().MaxDate * -1);
             List<Documentos> documentos = _context.Documento.
                 Include(b=> b.LineasEstado).
-                Where(d => d.FechaCreacion >= fecha && d.Estado1 != string.Empty && d.Estado1 != d.Estado2).
-                OrderByDescending(d => d.FechaCreacion).ToList();
+                Where(d => d.FechaCreacion >= fecha && d.Estado1 != string.Empty && d.Estado1 != d.Estado2 && d.Enviado == false).
+                OrderByDescending(d => d.FechaEmision).ToList();
             return documentos;
         }
     }
